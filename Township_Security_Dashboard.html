@@ -639,10 +639,85 @@ function loadVehicles(){
 }
 
 // ── REFRESH ───────────────────────────────────────────────────
+// ── COMMAND CENTER ────────────────────────────────────────────
+function loadCommand(){
+  fetchSheet('Form_Command').then(data=>{
+    const rows=parseRows(data).filter(r=>r['Township CCTV — Cameras LIVE (out of 27)']!==null);
+    if(!rows.length) return;
+    const latest=rows[rows.length-1];
+
+    const twpLive=parseInt(latest['Township CCTV — Cameras LIVE (out of 27)'])||0;
+    const lprLive=parseInt(latest['LPR Cameras — Cameras LIVE (out of 11)'])||0;
+    const chslLive=parseInt(latest['CHSL Cameras — Cameras LIVE (out of 49)'])||0;
+    const issued=parseInt(latest['Pistols ISSUED (out of armoury)'])||0;
+    const inArmoury=15-issued;
+
+    const twpFault=27-twpLive;
+    const lprFault=11-lprLive;
+    const chslFault=49-chslLive;
+    const totalLive=twpLive+lprLive+chslLive;
+    const totalFault=twpFault+lprFault+chslFault;
+
+    // Update CCTV rows
+    const cctvRows=document.querySelectorAll('.cctv-row');
+    if(cctvRows.length>=3){
+      // Township
+      cctvRows[0].querySelector('.cctv-num').textContent='27';
+      const twpSub=cctvRows[0].querySelector('.cctv-right div:last-child');
+      if(twpSub){ twpSub.textContent=twpLive+' live · '+twpFault+' fault'; twpSub.style.color=twpFault>0?'#D97706':'#16A34A'; }
+      cctvRows[0].querySelector('.prog-bar').style.width=Math.round((twpLive/27)*100)+'%';
+      cctvRows[0].querySelector('.prog-bar').style.background=twpFault>0?'#D97706':'#16A34A';
+
+      // LPR
+      cctvRows[1].querySelector('.cctv-num').textContent='11';
+      const lprSub=cctvRows[1].querySelector('.cctv-right div:last-child');
+      if(lprSub){ lprSub.textContent=lprLive+' live · '+lprFault+' fault'; lprSub.style.color=lprFault>0?'#D97706':'#16A34A'; }
+      cctvRows[1].querySelector('.prog-bar').style.width=Math.round((lprLive/11)*100)+'%';
+      cctvRows[1].querySelector('.prog-bar').style.background=lprFault>0?'#D97706':'#16A34A';
+
+      // CHSL
+      cctvRows[2].querySelector('.cctv-num').textContent='49';
+      const chslSub=cctvRows[2].querySelector('.cctv-right div:last-child');
+      if(chslSub){ chslSub.textContent=chslLive+' live · '+chslFault+' fault'; chslSub.style.color=chslFault>0?'#D97706':'#16A34A'; }
+      cctvRows[2].querySelector('.prog-bar').style.width=Math.round((chslLive/49)*100)+'%';
+      cctvRows[2].querySelector('.prog-bar').style.background=chslFault>2?'#DC2626':chslFault>0?'#D97706':'#16A34A';
+    }
+
+    // Update total feeds
+    const totalEl=document.querySelector('.cctv-row + .cctv-row + .cctv-row + .divider + div span:last-child');
+
+    // Update armoury
+    renderAmmo(issued,15);
+    const armIssued=document.querySelector('.card:nth-child(2) .ammo-wrap');
+    const armTitle=document.querySelector('.card .ammo-wrap');
+    // Update issued count display
+    const armCount=document.querySelector('[style*="font-size:26px"]');
+    if(armCount) armCount.innerHTML=issued+' <span style="font-size:13px;font-weight:400;color:var(--sub);">issued</span>';
+    const armSub=document.querySelector('[style*="font-size:26px"] + div');
+    if(armSub) armSub.textContent=inArmoury+' in armoury · 15 total';
+
+    // Armoury pill
+    const armPill=document.querySelector('.card .pill-amber, .card .pill-green, .card .pill-red');
+    if(armPill){
+      if(issued>10){ armPill.className='pill pill-red'; armPill.textContent=issued+' out'; }
+      else if(issued>5){ armPill.className='pill pill-amber'; armPill.textContent=issued+' out'; }
+      else{ armPill.className='pill pill-green'; armPill.textContent=issued+' out'; }
+    }
+
+    // CCTV alert if faults detected
+    if(totalFault>0){
+      gid('alert-badge').style.display='flex';
+      setText('alert-text',totalFault+' camera fault'+(totalFault>1?'s':''));
+    }
+
+  }).catch(()=>{ /* silently fail — use defaults */ });
+}
+
 function refresh(){
   loadStrength();
   loadIncidents();
   loadVehicles();
+  loadCommand();
   const now=new Date();
   setText('last-refresh','  Last refresh: '+now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'}));
 }
