@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Township Security Command Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#1B2A4A;--gold:#C9A84C;--white:#FFFFFF;
+  --bg:#F0F2F5;--card:#FFFFFF;--border:#E2E5EA;
+  --text:#1A1A2E;--sub:#6B7280;
+  --green:#166534;--green-bg:#DCFCE7;
+  --amber:#92400E;--amber-bg:#FEF3C7;
+  --red:#991B1B;--red-bg:#FEE2E2;
+  --blue:#1E40AF;--blue-bg:#DBEAFE;
+  --gray:#374151;--gray-bg:#F3F4F6;
+  --purple:#5B21B6;--purple-bg:#EDE9FE;
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* TOP BAR */
+.topbar{background:var(--navy);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.topbar-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.topbar-title{color:var(--white);font-size:16px;font-weight:600;letter-spacing:.01em;}
+.shift-badge{font-size:11px;padding:3px 12px;border-radius:20px;display:flex;align-items:center;gap:5px;font-weight:500;}
+.sb-morning{background:#FEF3C7;color:#92400E;}
+.sb-night{background:#DBEAFE;color:#1E40AF;}
+.alert-badge{background:#FEE2E2;color:#991B1B;font-size:11px;padding:3px 12px;border-radius:20px;display:flex;align-items:center;gap:5px;font-weight:500;}
+.topbar-right{color:#94A3B8;font-size:12px;white-space:nowrap;}
+.last-refresh{color:var(--gold);font-size:11px;margin-left:8px;}
+
+/* LAYOUT */
+.dash{padding:14px;display:flex;flex-direction:column;gap:12px;max-width:1600px;margin:0 auto;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+.grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+.card-title{font-size:11px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.metric-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.metric-label{font-size:11px;color:var(--sub);margin-bottom:4px;}
+.metric-val{font-size:24px;font-weight:700;color:var(--text);line-height:1.1;}
+.metric-sub{font-size:11px;color:var(--sub);margin-top:3px;}
+
+/* STRENGTH PANEL */
+.strength-panel{background:var(--navy);border-radius:12px;padding:14px 16px;}
+.strength-title{color:var(--gold);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.strength-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+.str-box{background:rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;text-align:center;}
+.str-label{font-size:10px;color:#94A3B8;margin-bottom:4px;}
+.str-val{font-size:22px;font-weight:700;color:var(--white);}
+.str-total{background:rgba(201,168,76,.15);border:1px solid var(--gold);border-radius:8px;padding:8px 10px;text-align:center;}
+.str-total .str-val{color:var(--gold);}
+.total-check{font-size:11px;margin-top:6px;font-weight:500;}
+.total-ok{color:#86EFAC;}
+.total-warn{color:#FCD34D;}
+.total-err{color:#FCA5A5;}
+
+/* PILLS */
+.pill{font-size:11px;padding:2px 10px;border-radius:20px;font-weight:500;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;}
+.pill-green{background:var(--green-bg);color:var(--green);}
+.pill-amber{background:var(--amber-bg);color:var(--amber);}
+.pill-red{background:var(--red-bg);color:var(--red);}
+.pill-gray{background:var(--gray-bg);color:var(--gray);}
+.pill-blue{background:var(--blue-bg);color:var(--blue);}
+.pill-purple{background:var(--purple-bg);color:var(--purple);}
+
+/* DOT */
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
+.dot-green{background:#16A34A;}.dot-amber{background:#D97706;}.dot-gray{background:#9CA3AF;}.dot-red{background:#DC2626;}
+
+/* ROWS */
+.row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);gap:8px;}
+.row:last-child{border-bottom:none;}
+.row-left{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.row-label{font-size:13px;color:var(--text);display:flex;align-items:center;gap:6px;}
+.row-sub{font-size:11px;color:var(--sub);}
+.divider{border:none;border-top:1px solid var(--border);margin:8px 0;}
+
+/* CCTV */
+.cctv-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);gap:8px;}
+.cctv-row:last-child{border-bottom:none;}
+.prog-wrap{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:0 12px;}
+.prog-bar{height:100%;border-radius:3px;}
+.cctv-right{text-align:right;min-width:65px;}
+.cctv-num{font-size:18px;font-weight:700;color:var(--text);}
+
+/* ARMOURY */
+.ammo-wrap{display:flex;gap:3px;flex-wrap:wrap;margin:8px 0;}
+.ammo-box{width:21px;height:21px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;}
+.ammo-out{background:var(--red-bg);color:var(--red);}
+.ammo-in{background:var(--green-bg);color:var(--green);}
+
+/* SUPERVISOR */
+.sup-row{background:var(--bg);border-radius:8px;padding:8px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.sup-row:last-child{margin-bottom:0;}
+.sup-name{font-size:12px;font-weight:600;color:var(--text);}
+.sup-detail{font-size:11px;color:var(--sub);margin-top:1px;}
+.shift-pip{font-size:10px;padding:1px 8px;border-radius:10px;font-weight:500;}
+.sp-m{background:var(--amber-bg);color:var(--amber);}
+.sp-n{background:var(--blue-bg);color:var(--blue);}
+
+/* STATIC AP TABLE */
+.loc-table{width:100%;border-collapse:collapse;}
+.loc-table th{font-size:10px;color:var(--sub);font-weight:600;text-align:left;padding:0 8px 7px 0;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.03em;}
+.loc-table td{font-size:12px;color:var(--text);padding:6px 8px 6px 0;border-bottom:1px solid var(--border);vertical-align:middle;}
+.loc-table tr:last-child td{border-bottom:none;}
+.shift-cell{display:flex;gap:4px;}
+
+/* PATROL */
+.section-div{font-size:10px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;padding:6px 0 4px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.patrol-unit{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);gap:8px;}
+.patrol-unit:last-child{border-bottom:none;}
+
+/* INCIDENT */
+.inc-row{padding:7px 0;border-bottom:1px solid var(--border);}
+.inc-row:last-child{border-bottom:none;}
+.inc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:3px;}
+.inc-desc{font-size:13px;color:var(--text);line-height:1.3;flex:1;}
+.inc-meta{font-size:11px;color:var(--sub);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+
+/* EVENT */
+.evt-row{padding:6px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.evt-row:last-child{border-bottom:none;}
+.evt-name{font-size:13px;color:var(--text);font-weight:500;}
+.evt-detail{font-size:11px;color:var(--sub);}
+
+/* VEHICLE */
+.veh-card{background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
+.veh-card:last-child{margin-bottom:0;}
+.veh-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.veh-name{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;}
+.veh-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.veh-stat{background:var(--card);border-radius:6px;padding:7px 10px;border:1px solid var(--border);}
+.veh-stat-label{font-size:10px;color:var(--sub);margin-bottom:2px;}
+.veh-stat-val{font-size:15px;font-weight:700;color:var(--text);}
+.veh-stat-unit{font-size:10px;color:var(--sub);font-weight:400;}
+.fuel-bar-wrap{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:7px;}
+.fuel-bar{height:100%;border-radius:2px;}
+.cost-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.cost-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center;}
+.cost-label{font-size:10px;color:var(--sub);margin-bottom:3px;}
+.cost-val{font-size:18px;font-weight:700;color:var(--text);}
+.budget-bar-wrap{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:6px;}
+.budget-bar{height:100%;border-radius:4px;transition:width .5s;}
+
+/* LOADING */
+.loading{text-align:center;padding:20px;color:var(--sub);font-size:13px;}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .8s linear infinite;margin-right:6px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* NO DATA */
+.no-data{text-align:center;padding:16px;color:var(--sub);font-size:12px;font-style:italic;}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <i class="ti ti-shield-check" style="font-size:22px;color:#60A5FA;"></i>
+    <span class="topbar-title">Township Security Command Dashboard</span>
+    <span class="shift-badge sb-morning" id="shift-badge">
+      <i class="ti ti-sun" style="font-size:11px;"></i>
+      <span id="shift-label">Morning Shift — 07:00–19:00</span>
+    </span>
+    <span class="alert-badge" id="alert-badge" style="display:none;">
+      <i class="ti ti-alert-triangle" style="font-size:11px;"></i>
+      <span id="alert-text">Alert</span>
+    </span>
+  </div>
+  <div class="topbar-right">
+    <span id="clock">—</span>
+    <span class="last-refresh" id="last-refresh"></span>
+  </div>
+</div>
+
+<div class="dash">
+
+  <!-- STRENGTH PANEL -->
+  <div class="strength-panel">
+    <div class="strength-title">
+      <span><i class="ti ti-clipboard-list" style="font-size:13px;margin-right:5px;"></i>Daily Strength — Establishment: 31</span>
+      <span id="strength-date" style="color:#94A3B8;font-size:11px;">Loading...</span>
+    </div>
+    <div class="strength-grid">
+      <div class="str-box"><div class="str-label">Supervisors</div><div class="str-val" id="s-sup">—</div></div>
+      <div class="str-box"><div class="str-label">Static AP</div><div class="str-val" id="s-static">—</div></div>
+      <div class="str-box"><div class="str-label">Patrol AP</div><div class="str-val" id="s-patrol">—</div></div>
+      <div class="str-box"><div class="str-label">Buffer</div><div class="str-val" id="s-buffer">—</div></div>
+      <div class="str-box"><div class="str-label">Off Duty</div><div class="str-val" id="s-off">—</div></div>
+      <div class="str-box"><div class="str-label">Annual Leave</div><div class="str-val" id="s-al" style="color:#60A5FA;">—</div></div>
+      <div class="str-box"><div class="str-label">MC / Sick</div><div class="str-val" id="s-mc" style="color:#FBBF24;">—</div></div>
+    </div>
+    <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;">
+      <div class="total-check" id="total-check">—</div>
+      <div style="font-size:11px;color:#94A3B8;">Submitted by: <span id="s-submittedby" style="color:var(--gold);">—</span> &nbsp;|&nbsp; Shift: <span id="s-shift" style="color:var(--gold);">—</span></div>
+    </div>
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="grid4">
+    <div class="metric-card">
+      <div class="metric-label">On duty</div>
+      <div class="metric-val" id="kpi-onduty">—</div>
+      <div class="metric-sub" id="kpi-onduty-sub">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Not on duty</div>
+      <div class="metric-val" id="kpi-notduty">—</div>
+      <div class="metric-sub" id="kpi-notduty-sub">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Active incidents</div>
+      <div class="metric-val" id="kpi-incidents" style="color:#DC2626;">—</div>
+      <div class="metric-sub" id="kpi-incidents-sub">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">MTD Fuel Cost</div>
+      <div class="metric-val" id="kpi-fuel-cost">—</div>
+      <div class="metric-sub" id="kpi-fuel-sub">—</div>
+    </div>
+  </div>
+
+  <!-- ROW: CCTV + ARMOURY + SUPERVISORS -->
+  <div class="grid3">
+
+    <!-- CCTV -->
+    <div class="card">
+      <div class="card-title"><i class="ti ti-cctv"></i> CCTV Systems</div>
+      <div class="cctv-row">
+        <div><div style="font-size:13px;font-weight:600;">Township</div><div style="font-size:11px;color:var(--sub);">General surveillance</div></div>
+        <div class="prog-wrap"><div class="prog-bar" style="width:96%;background:#16A34A;"></div></div>
+        <div class="cctv-right"><div class="cctv-num">27</div><div style="font-size:11px;color:#16A34A;">26 live · 1 fault</div></div>
+      </div>
+      <div class="cctv-row">
+        <div><div style="font-size:13px;font-weight:600;">LPR</div><div style="font-size:11px;color:var(--sub);">Plate recognition</div></div>
+        <div class="prog-wrap"><div class="prog-bar" style="width:100%;background:#16A34A;"></div></div>
+        <div class="cctv-right"><div class="cctv-num">11</div><div style="font-size:11px;color:#16A34A;">11 live · 0 fault</div></div>
+      </div>
+      <div class="cctv-row">
+        <div><div style="font-size:13px;font-weight:600;">CHSL</div><div style="font-size:11px;color:var(--sub);">High-security</div></div>
+        <div class="prog-wrap"><div class="prog-bar" style="width:94%;background:#D97706;"></div></div>
+        <div class="cctv-right"><div class="cctv-num">49</div><div style="font-size:11px;color:#D97706;">46 live · 3 fault</div></div>
+      </div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;color:var(--sub);">Total feeds</span>
+        <span style="font-size:18px;font-weight:700;">87 <span style="font-size:12px;color:var(--sub);font-weight:400;">cameras</span></span>
+      </div>
+    </div>
+
+    <!-- ARMOURY -->
+    <div class="card">
+      <div class="card-title"><i class="ti ti-lock"></i> Armoury — Pistols</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+        <div>
+          <div style="font-size:26px;font-weight:700;">6 <span style="font-size:13px;font-weight:400;color:var(--sub);">issued</span></div>
+          <div style="font-size:11px;color:var(--sub);">9 in armoury · 15 total</div>
+        </div>
+        <span class="pill pill-amber">6 out</span>
+      </div>
+      <div class="ammo-wrap" id="ammo-boxes"></div>
+      <div style="display:flex;gap:12px;margin-bottom:6px;">
+        <span style="font-size:11px;color:var(--sub);display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--red-bg);border:1px solid #FCA5A5;display:inline-block;"></span>Issued</span>
+        <span style="font-size:11px;color:var(--sub);display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--green-bg);border:1px solid #86EFAC;display:inline-block;"></span>In armoury</span>
+      </div>
+      <div class="divider"></div>
+      <div class="row"><span style="font-size:12px;">Last inspection</span><span style="font-size:12px;color:var(--sub);">07:15 today</span></div>
+    </div>
+
+    <!-- SUPERVISORS -->
+    <div class="card">
+      <div class="card-title"><i class="ti ti-user-star"></i> Operation Supervisors</div>
+      <div class="sup-row">
+        <div><div class="sup-name">SM/PB Kamaruzaman</div><div class="sup-detail">Permanent day · All areas</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+          <span class="pill pill-green">On Duty</span>
+          <span class="shift-pip sp-m">07:00–19:00</span>
+        </div>
+      </div>
+      <div class="sup-row">
+        <div><div class="sup-name">KPL/PB Shafril</div><div class="sup-detail">Permanent day · All areas</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+          <span class="pill pill-green">On Duty</span>
+          <span class="shift-pip sp-m">07:00–19:00</span>
+        </div>
+      </div>
+      <div class="sup-row">
+        <div><div class="sup-name">SJN/PB Azzar</div><div class="sup-detail">Rotating 12h shift</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+          <span class="pill pill-green">On Duty</span>
+          <span class="shift-pip" id="azzar-pip">—</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title" style="margin-bottom:6px;"><i class="ti ti-user-plus"></i> Buffer Deployment</div>
+      <div class="row">
+        <div class="row-left"><div class="row-label">Buffer strength today</div><div class="row-sub">Available for dispatch</div></div>
+        <span class="pill pill-blue" id="buffer-pill">— AP</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW: STATIC AP + PATROL + INCIDENTS -->
+  <div class="grid3">
+
+    <!-- STATIC AP -->
+    <div class="card">
+      <div class="card-title"><i class="ti ti-building-community"></i> Static AP Deployment</div>
+      <table class="loc-table">
+        <thead><tr><th>Location</th><th>Type</th><th>Shifts</th><th style="text-align:right;">Status</th></tr></thead>
+        <tbody>
+          <tr><td>Citrine Lakehomes</td><td><span class="pill pill-gray" style="font-size:10px;">Residential</span></td><td><div class="shift-cell"><span class="shift-pip sp-m">M</span><span class="shift-pip sp-n">N</span></div></td><td style="text-align:right;"><span class="pill pill-green">Covered</span></td></tr>
+          <tr><td>Citrine Residence</td><td><span class="pill pill-gray" style="font-size:10px;">Residential</span></td><td><div class="shift-cell"><span class="shift-pip sp-m">M</span><span class="shift-pip sp-n">N</span></div></td><td style="text-align:right;"><span class="pill pill-green">Covered</span></td></tr>
+          <tr><td>Emerald Residence</td><td><span class="pill pill-gray" style="font-size:10px;">Residential</span></td><td><div class="shift-cell"><span class="shift-pip sp-m">M</span><span class="shift-pip sp-n">N</span></div></td><td style="text-align:right;"><span class="pill pill-green">Covered</span></td></tr>
+          <tr><td>Lenang Heights</td><td><span class="pill pill-gray" style="font-size:10px;">Residential</span></td><td><div class="shift-cell"><span class="shift-pip sp-m">M</span><span class="shift-pip" style="background:var(--gray-bg);color:var(--sub);">—</span></div></td><td style="text-align:right;"><span class="pill pill-amber">Day only</span></td></tr>
+          <tr><td>Sunway Hotel Big Box</td><td><span class="pill pill-blue" style="font-size:10px;">Hotel</span></td><td><div class="shift-cell"><span class="shift-pip sp-m">M</span><span class="shift-pip sp-n">N</span></div></td><td style="text-align:right;"><span class="pill pill-green">Covered</span></td></tr>
+          <tr><td>Sunway Big Box Mall</td><td><span class="pill pill-blue" style="font-size:10px;">Mall</span></td><td><div class="shift-cell"><span class="shift-pip sp-m">M</span><span class="shift-pip" style="background:var(--gray-bg);color:var(--sub);">—</span></div></td><td style="text-align:right;"><span class="pill pill-amber">Day only</span></td></tr>
+          <tr><td>PP6 (Police Post 6)</td><td><span class="pill pill-amber" style="font-size:10px;">Police Post</span></td><td><div class="shift-cell"><span class="shift-pip sp-m">M</span><span class="shift-pip sp-n">N</span></div></td><td style="text-align:right;"><span class="pill pill-green">Covered</span></td></tr>
+        </tbody>
+      </table>
+      <div class="divider"></div>
+      <div style="font-size:11px;color:var(--sub);">Morning: 7 posts · Night: 5 posts · 1 AP per post</div>
+    </div>
+
+    <!-- PATROL + EVENTS -->
+    <div class="card">
+      <div class="card-title"><i class="ti ti-car"></i> Patrol Units</div>
+      <div class="section-div">Patrol Cars — 2 AP each</div>
+      <div class="patrol-unit">
+        <div class="row-left"><div class="row-label"><span class="dot dot-green"></span> Patrol Car 1</div><div class="row-sub">Zone: Citrine / Emerald · 2 AP</div></div>
+        <span class="pill pill-green">On Patrol</span>
+      </div>
+      <div class="patrol-unit">
+        <div class="row-left"><div class="row-label"><span class="dot dot-green"></span> Patrol Car 2</div><div class="row-sub">Zone: Sunway / PP6 · 2 AP</div></div>
+        <span class="pill pill-green">On Patrol</span>
+      </div>
+      <div class="section-div" style="margin-top:6px;">Bike / URB — 1 AP each</div>
+      <div class="patrol-unit">
+        <div class="row-left"><div class="row-label"><span class="dot dot-green"></span> Patrol Bike 1</div><div class="row-sub">Zone: Mall perimeter · 1 AP</div></div>
+        <span class="pill pill-green">On Patrol</span>
+      </div>
+      <div class="patrol-unit">
+        <div class="row-left"><div class="row-label"><span class="dot dot-gray"></span> Patrol Bike 2</div><div class="row-sub">Base standby · 1 AP</div></div>
+        <span class="pill pill-gray">Standby</span>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title" style="margin-bottom:8px;"><i class="ti ti-calendar-event"></i> Special Events Deployment</div>
+      <div id="events-list"><div class="no-data">No active events</div></div>
+    </div>
+
+    <!-- INCIDENTS -->
+    <div class="card">
+      <div class="card-title"><i class="ti ti-alert-circle"></i> Incident Log <span id="inc-count" style="margin-left:auto;" class="pill pill-red" style="display:none;"></span></div>
+      <div id="incidents-list"><div class="loading"><span class="spinner"></span>Loading incidents...</div></div>
+    </div>
+  </div>
+
+  <!-- VEHICLE MONITORING -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:12px;">
+      <i class="ti ti-steering-wheel"></i> Patrol Vehicle Monitoring
+      <span style="margin-left:auto;font-size:10px;color:var(--sub);">Cars: Diesel B10 @ RM2.88/L &nbsp;·&nbsp; Bikes: RON95 @ RM2.05/L &nbsp;·&nbsp; Auto-refreshes from Vehicle Log</span>
+    </div>
+    <div class="cost-summary">
+      <div class="cost-box">
+        <div class="cost-label">Total KM today (all units)</div>
+        <div class="cost-val" id="v-total-km">—</div>
+        <div style="font-size:11px;color:var(--sub);">km</div>
+      </div>
+      <div class="cost-box">
+        <div class="cost-label">Total fuel used today</div>
+        <div class="cost-val" id="v-total-fuel">—</div>
+        <div style="font-size:11px;color:var(--sub);">litres</div>
+      </div>
+      <div class="cost-box">
+        <div class="cost-label">MTD fuel cost vs budget</div>
+        <div class="cost-val" id="v-total-cost">—</div>
+        <div style="font-size:11px;color:var(--sub);" id="v-budget-sub">— / RM1,500 budget</div>
+        <div class="budget-bar-wrap"><div class="budget-bar" id="budget-bar" style="width:0%;background:#16A34A;"></div></div>
+      </div>
+    </div>
+    <div id="vehicle-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+  </div>
+
+</div><!-- end .dash -->
+
+<script>
+const SHEET_ID = '17UN8RsOIgqPX6im8zFAGPgCoDanIzauRbFgrFw_ICQM';
+const BUDGET = 1500;
+const TOTAL_EST = 31;
+
+// ── HELPERS ──────────────────────────────────────────────────
+function gid(id){ return document.getElementById(id); }
+function setText(id, val){ const el=gid(id); if(el) el.textContent=val; }
+
+function pill(text, type){
+  return `<span class="pill pill-${type}">${text}</span>`;
+}
+
+function fetchSheet(sheetName){
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  return fetch(url)
+    .then(r=>r.text())
+    .then(t=>{
+      const json = t.replace(/^[^(]+\(/, '').replace(/\);?$/, '');
+      return JSON.parse(json);
+    });
+}
+
+function parseRows(data){
+  if(!data||!data.table||!data.table.rows) return [];
+  const cols = data.table.cols.map(c=>c.label);
+  return data.table.rows.map(row=>{
+    const obj={};
+    row.c.forEach((cell,i)=>{ obj[cols[i]] = cell ? cell.v : null; });
+    return obj;
+  });
+}
+
+// ── CLOCK + SHIFT ─────────────────────────────────────────────
+function getShiftInfo(h){
+  if(h>=7&&h<19) return {label:'Morning Shift — 07:00–19:00',cls:'sb-morning',icon:'ti-sun',pip:'sp-m',pipLabel:'07:00–19:00'};
+  return {label:'Night Shift — 19:00–07:00',cls:'sb-night',icon:'ti-moon',pip:'sp-n',pipLabel:'19:00–07:00'};
+}
+function tick(){
+  const now=new Date();
+  const h=now.getHours();
+  const d=now.toLocaleDateString('en-MY',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+  const t=now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  setText('clock', d+'  |  '+t);
+  const info=getShiftInfo(h);
+  const badge=gid('shift-badge');
+  badge.className='shift-badge '+info.cls;
+  badge.innerHTML=`<i class="ti ${info.icon}" style="font-size:11px;"></i><span>${info.label}</span>`;
+  const pip=gid('azzar-pip');
+  if(pip){pip.className='shift-pip '+info.pip; pip.textContent=info.pipLabel;}
+}
+
+// ── ARMOURY BOXES ────────────────────────────────────────────
+function renderAmmo(issued=6, total=15){
+  let html='';
+  for(let i=1;i<=total;i++){
+    html+=`<div class="ammo-box ${i<=issued?'ammo-out':'ammo-in'}">P${i}</div>`;
+  }
+  const el=gid('ammo-boxes'); if(el) el.innerHTML=html;
+}
+
+// ── STRENGTH DATA ────────────────────────────────────────────
+function loadStrength(){
+  fetchSheet('Form_Strength').then(data=>{
+    const rows=parseRows(data).filter(r=>r['Supervisors on duty']!==null);
+    if(!rows.length){ setText('strength-date','No data yet'); return; }
+    const latest=rows[rows.length-1];
+    const sup=parseInt(latest['Supervisors on duty'])||0;
+    const sta=parseInt(latest['Static AP on duty'])||0;
+    const pat=parseInt(latest['Patrol AP on duty'])||0;
+    const buf=parseInt(latest['Buffer AP'])||0;
+    const off=parseInt(latest['Off Duty'])||0;
+    const al=parseInt(latest['Annual Leave (AL)'])||0;
+    const mc=parseInt(latest['MC / Sick Leave'])||0;
+    const total=sup+sta+pat+buf+off+al+mc;
+    const onduty=sup+sta+pat+buf;
+
+    setText('s-sup',sup); setText('s-static',sta);
+    setText('s-patrol',pat); setText('s-buffer',buf);
+    setText('s-off',off); setText('s-al',al); setText('s-mc',mc);
+    setText('s-submittedby', latest['Submitted by']||'—');
+    setText('s-shift', latest['Shift']||'—');
+
+    const dateVal = latest['Date'];
+    setText('strength-date', dateVal ? 'Latest: '+dateVal : '—');
+
+    const tchk=gid('total-check');
+    if(total===TOTAL_EST){
+      tchk.textContent='✓ Total: '+total+' / '+TOTAL_EST+' — Balanced';
+      tchk.className='total-check total-ok';
+    } else if(total<TOTAL_EST){
+      tchk.textContent='⚠ Total: '+total+' / '+TOTAL_EST+' — '+(TOTAL_EST-total)+' unaccounted';
+      tchk.className='total-check total-warn';
+    } else {
+      tchk.textContent='✗ Total: '+total+' / '+TOTAL_EST+' — Exceeds by '+(total-TOTAL_EST);
+      tchk.className='total-check total-err';
+    }
+
+    setText('kpi-onduty', onduty);
+    setText('kpi-onduty-sub','Sup '+sup+' · Static '+sta+' · Patrol '+pat+' · Buffer '+buf);
+    const notduty=off+al+mc;
+    setText('kpi-notduty', notduty);
+    setText('kpi-notduty-sub','Off '+off+' · AL '+al+' · MC '+mc);
+    gid('buffer-pill').textContent=buf+' AP available';
+
+    // headcount alert
+    if(total!==TOTAL_EST){
+      gid('alert-badge').style.display='flex';
+      setText('alert-text','Headcount mismatch ('+total+'/31)');
+    } else {
+      gid('alert-badge').style.display='none';
+    }
+  }).catch(()=>{setText('strength-date','Error loading');});
+}
+
+// ── INCIDENTS ────────────────────────────────────────────────
+function loadIncidents(){
+  fetchSheet('Form_Incidents').then(data=>{
+    const rows=parseRows(data).filter(r=>r['Incident description']);
+    const el=gid('incidents-list');
+    if(!rows.length){ el.innerHTML='<div class="no-data">No incidents logged yet</div>'; return; }
+
+    const sorted=rows.slice().reverse().slice(0,6);
+    const open=rows.filter(r=>(r['Current status']||'').includes('Open')||( r['Current status']||'').includes('Attending')).length;
+    setText('kpi-incidents', open);
+    setText('kpi-incidents-sub', open+' open/attending · '+rows.length+' total');
+
+    const incCount=gid('inc-count');
+    if(open>0){ incCount.textContent=open+' open'; incCount.style.display='inline-flex'; }
+
+    el.innerHTML=sorted.map(r=>{
+      const status=r['Current status']||'';
+      const priority=r['Priority level']||'';
+      let spill='pill-gray', scls='gray';
+      if(status.includes('Open')) { spill='pill-red'; }
+      else if(status.includes('Attending')) { spill='pill-amber'; }
+      else if(status.includes('Resolved')) { spill='pill-green'; }
+      let ppill='pill-gray';
+      if(priority.includes('High')) ppill='pill-red';
+      else if(priority.includes('Medium')) ppill='pill-amber';
+
+      const shortStatus = status.includes('Open')?'Open':status.includes('Attending')?'Attending':status.includes('Resolved')?'Resolved':status;
+      const shortPriority = priority.includes('High')?'High':priority.includes('Medium')?'Med':'Low';
+
+      return `<div class="inc-row">
+        <div class="inc-top">
+          <span class="inc-desc">${r['Incident description']||'—'}</span>
+          <span class="pill ${ppill}">${shortPriority}</span>
+        </div>
+        <div class="inc-meta">
+          <i class="ti ti-map-pin" style="font-size:11px;"></i> ${r['Location']||'—'}
+          &nbsp;·&nbsp; ${r['Assigned to']||'—'}
+          <span class="pill ${spill}" style="font-size:10px;">${shortStatus}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }).catch(()=>{ gid('incidents-list').innerHTML='<div class="no-data">Could not load incidents</div>'; });
+}
+
+// ── VEHICLES ─────────────────────────────────────────────────
+function loadVehicles(){
+  fetchSheet('Form_Vehicles').then(data=>{
+    const rows=parseRows(data).filter(r=>r['Vehicle']);
+    const vehicles=['Patrol Car 1','Patrol Car 2','Patrol Bike 1','Patrol Bike 2'];
+    const fuelPrice={'Patrol Car 1':2.88,'Patrol Car 2':2.88,'Patrol Bike 1':2.05,'Patrol Bike 2':2.05};
+    const icons={'Patrol Car 1':'ti-car','Patrol Car 2':'ti-car','Patrol Bike 1':'ti-motorbike','Patrol Bike 2':'ti-motorbike'};
+
+    const today=new Date();
+    const todayStr=today.toLocaleDateString('en-MY',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+    let totalKmToday=0, totalFuelToday=0, totalCostMTD=0;
+    const vcards=[];
+
+    vehicles.forEach(veh=>{
+      const vrows=rows.filter(r=>r['Vehicle']===veh);
+      const todayRows=vrows.filter(r=>{
+        if(!r['Date']) return false;
+        const d=new Date(r['Date']);
+        return d.getDate()===today.getDate()&&d.getMonth()===today.getMonth()&&d.getFullYear()===today.getFullYear();
+      });
+      const monthRows=vrows.filter(r=>{
+        if(!r['Date']) return false;
+        const d=new Date(r['Date']);
+        return d.getMonth()===today.getMonth()&&d.getFullYear()===today.getFullYear();
+      });
+
+      // KM today = latest end - earliest start
+      const endRows=todayRows.filter(r=>r['End mileage (KM)']>0);
+      const startRows=todayRows.filter(r=>r['Start mileage (KM)']>0);
+      let kmToday=0;
+      if(endRows.length&&startRows.length){
+        const maxEnd=Math.max(...endRows.map(r=>r['End mileage (KM)']||0));
+        const minStart=Math.min(...startRows.map(r=>r['Start mileage (KM)']||0));
+        kmToday=Math.max(0,maxEnd-minStart);
+      }
+
+      const fuelToday=todayRows.reduce((s,r)=>s+(parseFloat(r['Estimated fuel used this shift (Litres)'])||0),0);
+      const fillToday=todayRows.reduce((s,r)=>s+(parseFloat(r['Fill-up amount (Litres)'])||0),0);
+      const fillCostToday=todayRows.reduce((s,r)=>s+(parseFloat(r['Fill-up cost (RM)'])||0),0);
+
+      const kmMTD=monthRows.reduce((s,r)=>{
+        const end=r['End mileage (KM)']||0;
+        const start=r['Start mileage (KM)']||0;
+        return s+(end>start?end-start:0);
+      },0);
+      const fuelMTD=monthRows.reduce((s,r)=>s+(parseFloat(r['Estimated fuel used this shift (Litres)'])||0),0);
+      const costMTD=fillCostToday>0?fillCostToday:fuelMTD*fuelPrice[veh];
+
+      totalKmToday+=kmToday;
+      totalFuelToday+=fuelToday;
+      totalCostMTD+=costMTD;
+
+      const pct=Math.min(100,fuelToday>0?Math.round((fuelToday/30)*100):0);
+      const fuelColor=pct>80?'#DC2626':pct>50?'#D97706':'#16A34A';
+
+      vcards.push(`
+      <div class="veh-card">
+        <div class="veh-header">
+          <div class="veh-name"><i class="ti ${icons[veh]}"></i> ${veh}</div>
+          <span class="pill ${veh.includes('Car')?'pill-blue':'pill-green'}" style="font-size:10px;">${veh.includes('Car')?'Diesel':'RON95'}</span>
+        </div>
+        <div class="veh-grid">
+          <div class="veh-stat"><div class="veh-stat-label">KM today</div><div class="veh-stat-val">${kmToday||'—'}<span class="veh-stat-unit"> km</span></div></div>
+          <div class="veh-stat"><div class="veh-stat-label">Fuel today</div><div class="veh-stat-val">${fuelToday>0?fuelToday.toFixed(1):'—'}<span class="veh-stat-unit"> L</span></div></div>
+          <div class="veh-stat"><div class="veh-stat-label">KM this month</div><div class="veh-stat-val">${kmMTD||'—'}<span class="veh-stat-unit"> km</span></div></div>
+          <div class="veh-stat"><div class="veh-stat-label">Cost this month</div><div class="veh-stat-val" style="color:#1E40AF;">RM ${costMTD>0?costMTD.toFixed(0):'—'}</div></div>
+        </div>
+        <div class="fuel-bar-wrap"><div class="fuel-bar" style="width:${pct}%;background:${fuelColor};"></div></div>
+        <div style="font-size:10px;color:var(--sub);margin-top:3px;">Fuel used today vs 30L reference</div>
+      </div>`);
+    });
+
+    gid('vehicle-cards').innerHTML=vcards.join('');
+    setText('v-total-km', totalKmToday||'0');
+    setText('v-total-fuel', totalFuelToday>0?totalFuelToday.toFixed(1):'0.0');
+    setText('v-total-cost','RM '+(totalCostMTD>0?totalCostMTD.toFixed(2):'0.00'));
+    const pctBudget=Math.min(100,Math.round((totalCostMTD/BUDGET)*100));
+    const bbar=gid('budget-bar');
+    bbar.style.width=pctBudget+'%';
+    bbar.style.background=pctBudget>90?'#DC2626':pctBudget>70?'#D97706':'#16A34A';
+    setText('v-budget-sub','RM '+(totalCostMTD>0?totalCostMTD.toFixed(2):'0.00')+' / RM '+BUDGET.toLocaleString()+' budget ('+pctBudget+'%)');
+    setText('kpi-fuel-cost','RM '+(totalCostMTD>0?totalCostMTD.toFixed(2):'0.00'));
+    setText('kpi-fuel-sub',pctBudget+'% of RM '+BUDGET.toLocaleString()+' monthly budget');
+
+  }).catch(()=>{ gid('vehicle-cards').innerHTML='<div class="no-data">Could not load vehicle data</div>'; });
+}
+
+// ── REFRESH ───────────────────────────────────────────────────
+function refresh(){
+  loadStrength();
+  loadIncidents();
+  loadVehicles();
+  const now=new Date();
+  setText('last-refresh','  Last refresh: '+now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'}));
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+renderAmmo(6,15);
+tick();
+setInterval(tick,1000);
+refresh();
+setInterval(refresh, 5*60*1000); // refresh every 5 minutes
+</script>
+</body>
+</html>
